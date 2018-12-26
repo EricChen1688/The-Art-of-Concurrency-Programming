@@ -1,4 +1,5 @@
-package cn.eccto.taocp.chapter04;
+package cn.eccto.chapter04;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -6,31 +7,39 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
- * 6-20
+ * @author Chen 2018/10/15
+ * @email 749829987@qq.com
  */
-public class DefaultThreadPool<Job extends Runnable> implements ThreadPool<Job> {
+public class MyThreadPool <Job extends Runnable> implements ThreadPool<Job> {
     // 线程池最大限制数
-    private static final int      MAX_WORKER_NUMBERS     = 10;
+    private static final int MAX_WORKER_NUMBERS = 10;
     // 线程池默认的数量
-    private static final int      DEFAULT_WORKER_NUMBERS = 5;
+    private static final int DEFAULT_WORKER_NUMBERS = 5;
     // 线程池最小的数量
-    private static final int      MIN_WORKER_NUMBERS     = 1;
+    private static final int MIN_WORKER_NUMBERS= 1;
     // 这是一个工作列表，将会向里面插入工作
-    private final LinkedList<Job> jobs                   = new LinkedList<Job>();
+    private final LinkedList<Job> jobs  = new LinkedList<Job>();
     // 工作者列表
-    private final List<Worker>    workers                = Collections.synchronizedList(new ArrayList<Worker>());
+    private final List<MyThreadPool.Worker> workers  = Collections.synchronizedList(new ArrayList<MyThreadPool.Worker>());
     // 工作者线程的数量
-    private int                   workerNum              = DEFAULT_WORKER_NUMBERS;
+    private int  workerNum   = DEFAULT_WORKER_NUMBERS;
     // 线程编号生成
-    private AtomicLong            threadNum              = new AtomicLong();
-
-    public DefaultThreadPool() {
+    private AtomicLong threadNum  = new AtomicLong();
+    public MyThreadPool() {
         initializeWokers(DEFAULT_WORKER_NUMBERS);
     }
-
-    public DefaultThreadPool(int num) {
+    public MyThreadPool(int num) {
         workerNum = num > MAX_WORKER_NUMBERS ? MAX_WORKER_NUMBERS : num < MIN_WORKER_NUMBERS ? MIN_WORKER_NUMBERS : num;
         initializeWokers(workerNum);
+    }
+    // 初始化线程工作者
+    private void initializeWokers(int num) {
+        for (int i = 0; i < num; i++) {
+            MyThreadPool.Worker worker = new MyThreadPool.Worker();
+            workers.add(worker);
+            Thread thread = new Thread(worker, "ThreadPool-Worker-" + threadNum.incrementAndGet());
+            thread.start();
+        }
     }
 
     public void execute(Job job) {
@@ -44,7 +53,7 @@ public class DefaultThreadPool<Job extends Runnable> implements ThreadPool<Job> 
     }
 
     public void shutdown() {
-        for (Worker worker : workers) {
+        for (MyThreadPool.Worker worker : workers) {
             worker.shutdown();
         }
     }
@@ -79,21 +88,10 @@ public class DefaultThreadPool<Job extends Runnable> implements ThreadPool<Job> 
         return jobs.size();
     }
 
-    // 初始化线程工作者
-    private void initializeWokers(int num) {
-        for (int i = 0; i < num; i++) {
-            Worker worker = new Worker();
-            workers.add(worker);
-            Thread thread = new Thread(worker, "ThreadPool-Worker-" + threadNum.incrementAndGet());
-            thread.start();
-        }
-    }
-
     // 工作者，负责消费任务
-    class Worker implements Runnable {
+    class Worker implements Runnable{
         // 是否工作
         private volatile boolean running = true;
-
         public void run() {
             while (running) {
                 Job job = null;
@@ -120,7 +118,6 @@ public class DefaultThreadPool<Job extends Runnable> implements ThreadPool<Job> 
                 }
             }
         }
-
         public void shutdown() {
             running = false;
         }

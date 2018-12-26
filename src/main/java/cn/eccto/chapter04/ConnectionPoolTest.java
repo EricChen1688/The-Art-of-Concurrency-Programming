@@ -1,4 +1,4 @@
-package cn.eccto.taocp.chapter04;
+package cn.eccto.chapter04;
 
 import java.sql.Connection;
 import java.util.concurrent.CountDownLatch;

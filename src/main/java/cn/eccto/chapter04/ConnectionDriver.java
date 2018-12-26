@@ -1,4 +1,4 @@
-package cn.eccto.taocp.chapter04;
+package cn.eccto.chapter04;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;

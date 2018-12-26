@@ -1,4 +1,4 @@
-package cn.eccto.taocp.chapter04;
+package cn.eccto.chapter04;
 
 public interface ThreadPool<Job extends Runnable> {
     // 执行一个Job，这个Job需要实现Runnable
